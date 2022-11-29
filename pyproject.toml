@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "df-viewer"
+version = "0.1.0"
+description = "PoC to view dataframes in a streamlit application."
+authors = ["Ry Whittington <rwhitt2049@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.15.1"
+pandas = "^1.5.1"
+streamlit-aggrid = "^0.3.3"
+cytoolz = "^0.12.0"
+faker = "^15.3.3"
+prefect = "^2.6.9"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^0.991"
+pytest = "^7.2.0"
+black = "^22.10.0"
+flake8 = "^6.0.0"
+pep8-naming = "^0.13.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
