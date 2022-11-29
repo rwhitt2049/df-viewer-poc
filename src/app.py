@@ -59,7 +59,6 @@ gb.configure_pagination(
 gb.configure_default_column(
     editable=True
 )
-print("SHITTTTT\n", df)
 
 grid_response: models.GridResponse = st_aggrid.AgGrid(
     data=df,
@@ -78,7 +77,6 @@ st.markdown("## Rows with warnings")
 st.dataframe(rows_with_warnings)
 
 df = grid_response['data']
-print("SHITTTTT\n", df)
 df["valid_from"] = pd.to_datetime(df["valid_from"], format="%Y-%m-%dT%H:%M:%S.%")
 df["valid_until"] = pd.to_datetime(df["valid_until"], format="%Y-%m-%dT%H:%M:%S.%")
 st.session_state["data"] = df.set_index("id", drop=False)
