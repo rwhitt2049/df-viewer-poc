@@ -16,7 +16,7 @@ def id_range(n):
 
 def load_data():
     data = []
-    ids = id_range(25_000)
+    ids = id_range(10)
 
     for id_ in ids:
         price = random.randint(10, 10_000)

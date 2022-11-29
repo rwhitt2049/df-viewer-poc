@@ -8,56 +8,35 @@ import models
 
 st.set_page_config(layout="wide")
 
-# initialize state
-state_keys = {
-    "selected_rows": pd.DataFrame(),
-    # "rows_with_warnings": pd.DataFrame(),
-    # "failed_br_rows": pd.DataFrame(),
-}
 
-for key, val in state_keys.items():
-    if key not in st.session_state:
-        st.session_state[key] = val
-
+data_loader = st.cache(allow_output_mutation=True)(core.load_data)
 if "data" not in st.session_state:
-    data_loader = st.cache(allow_output_mutation=True)(core.load_data)
     df = data_loader()
+    df = df.set_index("id", drop=False)
     st.session_state["data"] = df
 else:
     df = st.session_state["data"]
 
-if "rows_with_warnings" not in st.session_state:
-    rows = validate.apply_warnings(df)
-    # print("WARNINGS", rows)
-    rows_with_warnings = pd.DataFrame(rows)
-    if not rows_with_warnings.empty:
-        rows_with_warnings.set_index("id", drop=False)
-    st.session_state["rows_with_warnings"] = rows_with_warnings
-else:
-    rows_with_warnings = st.session_state["rows_with_warnings"]
 
+rows = validate.apply_warnings(df)
+rows_with_warnings = pd.DataFrame(rows)
 if not rows_with_warnings.empty:
-    count = rows_with_warnings.drop(columns=["id"]).sum(axis=1)
-    # print("WARNINGS", count)
+    rows_with_warnings = rows_with_warnings.set_index("id")
+    count = rows_with_warnings.sum(axis=1)
+    df["Warnings"] = count
 else:
     df["Warnings"] = 0
-    st.session_state["data"] =df
 
-if "failed_br_rows" not in st.session_state:
-    rows = validate.apply_business_rules(df)
-    # print("FAILED", rows)
-    failed_rows = pd.DataFrame(rows).set_index("id", drop=False)
-    st.session_state["failed_br_rows"] = failed_rows
-else:
-    failed_rows = st.session_state["failed_br_rows"]
-
+rows = validate.apply_business_rules(df)
+failed_rows = pd.DataFrame(rows)
 if not failed_rows.empty:
-    count = failed_rows.drop(columns=["id"]).sum(axis=1)
+    failed_rows = failed_rows.set_index("id")
+    print(failed_rows)
+    count = failed_rows.sum(axis=1)
+    print(count)
     df["Failed_Business_Rules"] = count
 else:
     df["Failed_Business_Rules"] = 0
-    st.session_state["data"] = df
-
 
 
 
@@ -80,6 +59,7 @@ gb.configure_pagination(
 gb.configure_default_column(
     editable=True
 )
+print("SHITTTTT\n", df)
 
 grid_response: models.GridResponse = st_aggrid.AgGrid(
     data=df,
@@ -88,11 +68,21 @@ grid_response: models.GridResponse = st_aggrid.AgGrid(
     width='100%',
     columns_auto_size_mode=st_aggrid.ColumnsAutoSizeMode.FIT_ALL_COLUMNS_TO_VIEW,
     update_on=[("cellValueChanged", 100)],
-    data_return_mode=st_aggrid.DataReturnMode.FILTERED_AND_SORTED,  # no idea what this does
+    data_return_mode=st_aggrid.DataReturnMode.FILTERED_AND_SORTED,
 )
 
+st.markdown("## Rows that failed business rules")
+st.dataframe(failed_rows)
+
+st.markdown("## Rows with warnings")
+st.dataframe(rows_with_warnings)
 
 df = grid_response['data']
+print("SHITTTTT\n", df)
+df["valid_from"] = pd.to_datetime(df["valid_from"], format="%Y-%m-%dT%H:%M:%S.%")
+df["valid_until"] = pd.to_datetime(df["valid_until"], format="%Y-%m-%dT%H:%M:%S.%")
+st.session_state["data"] = df.set_index("id", drop=False)
+
 selected = grid_response['selected_rows']
 # print(type(selected))
 # print(selected)

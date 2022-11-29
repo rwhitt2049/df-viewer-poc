@@ -2,6 +2,7 @@ import collections
 import datetime as dt
 
 import cytoolz
+import pandas as pd
 
 
 def price_below_cost(row):
@@ -37,5 +38,16 @@ def apply_rules(data: "pandas.DataFrame", rules):
     return broken_rules_d
 
 
-apply_warnings = apply_rules(rules=[price_equal_cost, price_equal_cost])
+apply_warnings = apply_rules(rules=[price_equal_cost, price_below_cost])
 apply_business_rules = apply_rules(rules=[price_expired, margin_too_low])
+
+
+def validate(df):
+    warnings = pd.DataFrame(apply_warnings(df))
+    failed_br = pd.DataFrame(apply_business_rules(df))
+
+    if warnings.empty:
+        df = df["Warnings"] = 0
+    else:
+        df["Warnings"]
+
